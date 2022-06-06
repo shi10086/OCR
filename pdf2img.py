@@ -27,10 +27,13 @@ def identify_pic(img):
     d = pytesseract.image_to_data(img, output_type=Output.DICT)
     for i in range(len(d['text'])):
         if 0 < len(d['text'][i]):
-            (x, y, w, h) = (d['left'][i], d['top'][i], d['width'][i], d['height'][i])
+            (x, y, w, h) = (d['left'][i], d['top']
+                            [i], d['width'][i], d['height'][i])
             if data.get(d['text'][i]):
-                data[d['text'][i]].append([d['left'][i], d['top'][i], d['width'][i], d['height'][i]])
-            data[d['text'][i]] = ([[d['left'][i], d['top'][i], d['width'][i], d['height'][i]]])
+                data[d['text'][i]].append(
+                    [d['left'][i], d['top'][i], d['width'][i], d['height'][i]])
+            data[d['text'][i]] = (
+                [[d['left'][i], d['top'][i], d['width'][i], d['height'][i]]])
     return data
 
 
