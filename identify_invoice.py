@@ -3,7 +3,7 @@ import os
 import cv2 as cv
 import pytesseract
 
-from pdf2img import pdf2img, find_value, identify_pic
+from pdf2img import pdf2img, find_value, identify_pic, find_amount
 
 FOLDER = "./invoices"
 KEYWORD_LIST = ["Rechnungsnr",
@@ -15,20 +15,24 @@ KEYWORD_LIST = ["Rechnungsnr",
                 "Rechnungs-Nr.",
                 "Rechnungsnr.",
                 "nummer",
-                "Beleg"
+                "Beleg",
+                "Belegnummer"
                 ]
+KEYWORD_AMOUNT = ["Betrag"]
 pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I559057\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
 
 
 def getFlist(path):
-    for root, dirs, files in os.walk(path):
-        print('root_dir:', root)  # 当前路径
-        print('sub_dirs:', dirs)  # 子文件夹
-        print('files:', files)  # 文件名称，返回list类型
-    return files
+    # for root, dirs, files in os.walk(path):
+    #     print('root_dir:', root)  # 当前路径
+    #     print('sub_dirs:', dirs)  # 子文件夹
+    #     print('files:', files)  # 文件名称，返回list类型
+    # return files
+    return os.listdir(path)
 
 
 FILELIST = getFlist(FOLDER)
+print(FILELIST)
 
 for filename in FILELIST:
     print(filename)
@@ -37,47 +41,45 @@ for filename in FILELIST:
         img = cv.imread(pic_name)
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)  # 转化为灰度图
         ret, binary = cv.threshold(gray, 200, 255, cv.THRESH_BINARY)
-        # BGR = cv2.cvtColor(module,cv2.COLOR_BGR2RGB)# 转化为RGB格式
-        # ret,thresh = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)
-        # cv.imwrite(pic_name.split('.')[0]+'2.png', binary) # 保
         data = identify_pic(binary)
         cv.namedWindow('img', cv.WINDOW_NORMAL)
         cv.imshow("img", binary)
         cv.waitKey(0)
-        # print(data)
-        # data = drawBox(binary)
-        # keyword = "Kundennummer"
-        # keyword = "Rechnungsnummer"
+        invoice_amount = {"invoice": [], "amount": []}
         for keyword in KEYWORD_LIST:
             tg = data.get(keyword)
-            # cv.rectangle(img, (data['135011'][0][0], data['135011'][0][1]),
-            #              (data['135011'][0][0] + data['135011'][0][2], data['135011'][0][1] + data['135011'][0][3]), (255, 0, 0), 1)
-            # cv.rectangle(img, (data['Fichtner'][0][0], data['Fichtner'][0][1]), (data['Fichtner'][0][0] + data[
-            # 'Fichtner'][0][2], data['Fichtner'][0][1] + data['Fichtner'][0][3]), (255, 0, 0), 1)
-
-            # point_size = 1
-            # point_color = (0, 0, 255)  # BGR
-            # thickness = 4  # 0 、4、8
-            # cv.circle(img, (799, 1137), point_size, point_color, thickness)
-
             if tg is not None:
                 print(keyword)
-                tmp_res = []
                 for pos in tg:
                     res = find_value(target=pos, pos_lis=data)
                     new_keyword = res["below"]
                     print(new_keyword)
                     if len(new_keyword) < 7:
                         continue
-                    tmp_res.append(new_keyword)
+                    invoice_amount["invoice"].append(new_keyword)
                     tmp_idx = 0
                     while new_keyword != "":
                         new_pos = data.get(new_keyword)
-                        # if new_keyword ==
                         res = find_value(target=new_pos[tmp_idx], pos_lis=data)
-                        print(res)
                         new_keyword = res["below"]
                         if len(new_keyword) < 7:
                             break
-                        tmp_res.append(new_keyword)
-                print(tmp_res)
+                        invoice_amount["invoice"].append(new_keyword)
+        num_of_invoice = len(invoice_amount["invoice"])  # 发票数量
+        print(num_of_invoice)
+        for keyword in KEYWORD_AMOUNT:
+            tg = data.get(keyword)
+            if tg is not None:
+                print(keyword)
+                for pos in tg:
+                    res = find_amount(target=pos, pos_lis=data)
+                    new_keyword = res["below"]
+                    invoice_amount["amount"].append(new_keyword)
+                    while new_keyword != "" and len(invoice_amount["amount"]) < len(invoice_amount["invoice"]):
+                        new_pos = data.get(new_keyword)
+                        res = find_amount(target=new_pos[0], pos_lis=data)
+                        new_keyword = res["below"]
+                        invoice_amount["amount"].append(new_keyword)
+        if len(invoice_amount["amount"]) > len(invoice_amount["invoice"]):
+            invoice_amount["amount"] = invoice_amount["amount"][:-1]
+        print(invoice_amount)
