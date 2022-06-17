@@ -2,10 +2,17 @@ import os
 
 import cv2 as cv
 import pytesseract
+from pytesseract.pytesseract import TesseractError
 
 from pdf2img import pdf2img, find_value, identify_pic, find_amount
+import configparser
+import sys
+import os
+global FOLDER
+global KEYWORD_LIST
+global KEYWORD_AMOUNT
 
-FOLDER = "./invoices"
+# FOLDER = "./invoices"
 KEYWORD_LIST = ["Rechnungsnr",
                 "Rechnungsnummer",
                 "Number",
@@ -19,7 +26,18 @@ KEYWORD_LIST = ["Rechnungsnr",
                 "Belegnummer"
                 ]
 KEYWORD_AMOUNT = ["Betrag","betrag"]
-pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I333224\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
+#pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I333224\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
+
+def getConfig():
+    cwd = os.path.join(os.getcwd(), sys.argv[0])
+    root_folder = (os.path.dirname(cwd))
+    db_config = configparser.ConfigParser()
+    db_config.read(os.path.join(root_folder, 'inital.conf'))    
+    tesseractCmd = db_config.get('config', 'tesseractCmd')
+    folderPath = db_config.get('config', 'folderPath')
+    pytesseract.pytesseract.tesseract_cmd = tesseractCmd
+    global FOLDER
+    FOLDER = folderPath
 
 
 def getFlist(path):
@@ -30,13 +48,13 @@ def getFlist(path):
     # return files
     return os.listdir(path)
 
-
+getConfig()
 FILELIST = getFlist(FOLDER)
 print(FILELIST)
 
 for filename in FILELIST:
     print(filename)
-    pic_list = pdf2img("./invoices/" + filename)
+    pic_list = pdf2img(FOLDER + "/" + filename)
     for pic_name in pic_list:
         img = cv.imread(pic_name)
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)  # 转化为灰度图
