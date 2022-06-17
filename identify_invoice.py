@@ -18,8 +18,8 @@ KEYWORD_LIST = ["Rechnungsnr",
                 "Beleg",
                 "Belegnummer"
                 ]
-KEYWORD_AMOUNT = ["Betrag"]
-pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I559057\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
+KEYWORD_AMOUNT = ["Betrag","betrag"]
+pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I333224\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
 
 
 def getFlist(path):
