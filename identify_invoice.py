@@ -13,21 +13,33 @@ global KEYWORD_LIST
 global KEYWORD_AMOUNT
 
 # FOLDER = "./invoices"
-KEYWORD_LIST = ["Rechnungsnr",
-                "Rechnungsnummer",
-                "Number",
-                "Re-Nr",
-                "number",
-                "Belegnr.",
-                "Rechnungs-Nr.",
-                "Rechnungsnr.",
-                "nummer",
-                "Beleg",
-                "Belegnummer"
-                ]
-KEYWORD_AMOUNT = ["Betrag","betrag"]
+# KEYWORD_LIST = ["Rechnungsnr",
+#                 "Rechnungsnummer",
+#                 "Number",
+#                 "Re-Nr",
+#                 "number",
+#                 "Belegnr.",
+#                 "Rechnungs-Nr.",
+#                 "Rechnungsnr.",
+#                 "nummer",
+#                 "Beleg",
+#                 "Belegnummer"
+#                 ]
+# KEYWORD_AMOUNT = ["Betrag","betrag"]
 #pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I333224\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
-
+def getTemplate():
+    cwd = os.path.join(os.getcwd(), sys.argv[0])
+    root_folder = (os.path.dirname(cwd))
+    db_config = configparser.ConfigParser()
+    db_config.read(os.path.join(root_folder, 'template.conf'))  
+    key_refrences = db_config.get('german', 'reference').strip().split('\n')
+    print(key_refrences)
+    global KEYWORD_LIST
+    KEYWORD_LIST = key_refrences
+    key_amount =  db_config.get('german', 'amout').strip().split('\n')
+    global KEYWORD_AMOUNT
+    KEYWORD_AMOUNT = key_amount
+    print(key_amount)
 def getConfig():
     cwd = os.path.join(os.getcwd(), sys.argv[0])
     root_folder = (os.path.dirname(cwd))
@@ -48,9 +60,13 @@ def getFlist(path):
     # return files
     return os.listdir(path)
 
-getConfig()
-FILELIST = getFlist(FOLDER)
-print(FILELIST)
+
+
+if __name__ == '__main__':
+    getTemplate()
+    getConfig()
+    FILELIST = getFlist(FOLDER)
+    print(FILELIST)
 
 for filename in FILELIST:
     print(filename)
