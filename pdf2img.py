@@ -4,6 +4,7 @@ from pytesseract import Output
 import cv2 as cv
 import math
 import pandas as pd
+import os.path
 
 
 def pdf2img(filename):
@@ -24,7 +25,8 @@ def pdf2img(filename):
             zoom_y = 2.0
             trans = fitz.Matrix(zoom_x, zoom_y).prerotate(rotate)
             pix = page.get_pixmap(matrix=trans, alpha=False)
-            pic_name = filename.split(".")[0] + "_page_" + str(page_num) + ".png"
+            pdf_file = os.path.basename(filename)
+            pic_name = pdf_file.split(".")[0] + "_page_" + str(page_num) + ".png"
             pix.save(pic_name)
             pic_list.append(pic_name)
         return pic_list
@@ -46,7 +48,7 @@ def identify_pic(img):
 
 
 def calculate_center(point):
-    return [point[0]+point[2]/2,point[1]+point[3]/2]
+    return [point[0] + point[2] / 2, point[1] + point[3] / 2]
 
 
 def find_value(target, pos_lis):
@@ -56,7 +58,8 @@ def find_value(target, pos_lis):
     width = target[2]
     height = target[3]
     # 寻找关键词右侧和下方的单词
-    possible_res = {"right": "", "below": ""}
+    possible_res = {"right": ["", []], "below": ["", []]}
+    # possible_res = {"right": "", "below": ""}
     min_below_dis = 9999
     min_right_dis = 9999
     tg_center = calculate_center(target)
@@ -65,7 +68,7 @@ def find_value(target, pos_lis):
         if not is_number(key):
             continue
         for pos in tmp_pos_lis:
-            if pos[0] + pos[2] < target_x or pos[1] + pos[3] < target_y or (
+            if pos[0] + pos[2] < target_x or pos[1] + pos[3] < target_y + 2 or (
                     pos[0] == target_x and pos[1] == target_y) or (
                     pos[0] >= target_x + width and pos[1] + pos[3] >= target_y):
                 continue
@@ -73,15 +76,17 @@ def find_value(target, pos_lis):
             # 计算距离以更新结果
             pos_center = calculate_center(pos)
             # tmp_dis = abs(pos[0] - target_x) + abs(pos[1] - target_y)
-            tmp_dis = abs(tg_center[0]-pos_center[0]) + abs(tg_center[1]-pos_center[1])
+            tmp_dis = abs(tg_center[0] - pos_center[0]) + abs(tg_center[1] - pos_center[1])
             if pos[0] >= target_x + width:
                 if tmp_dis < min_right_dis:
                     min_right_dis = tmp_dis
-                    possible_res["right"] = key
+                    possible_res["right"][0] = key
+                    possible_res["right"][1] = pos
             if pos[1] + pos[3] >= target_y:
                 if tmp_dis < min_below_dis:
                     min_below_dis = tmp_dis
-                    possible_res["below"] = key
+                    possible_res["below"][0] = key
+                    possible_res["below"][1] = pos
     return possible_res
 
 
@@ -92,7 +97,8 @@ def find_amount(target, pos_lis):
     width = target[2]
     height = target[3]
     # 寻找关键词右侧和下方的单词
-    possible_res = {"right": "", "below": ""}
+    # possible_res = {"right": "", "below": ""}
+    possible_res = {"right": ["", []], "below": ["", []]}
     min_below_dis = 9999
     min_right_dis = 9999
     tg_center = calculate_center(target)
@@ -113,11 +119,13 @@ def find_amount(target, pos_lis):
             if pos[0] >= target_x + width:
                 if tmp_dis < min_right_dis:
                     min_right_dis = tmp_dis
-                    possible_res["right"] = key
+                    possible_res["right"][0] = key
+                    possible_res["right"][1] = pos
             if pos[1] + pos[3] >= target_y:
                 if tmp_dis < min_below_dis:
                     min_below_dis = tmp_dis
-                    possible_res["below"] = key
+                    possible_res["below"][0] = key
+                    possible_res["below"][1] = pos
     return possible_res
 
 
@@ -184,9 +192,9 @@ def is_amount(s):
 
 
 if __name__ == '__main__':
-    print(is_amount("1.392,71"))
+    print(is_amount(''))
     # # print(read_keywords("rules.xlsx"))
-    # filename = "Birgit Klaerner, reh 2808, FI FS IS-DE_2020_11_27_12_56_53.pdf"
+    # filename = "Birgit Klaerner, reh 2808, FI FS IS-DE_2020_12_02_15_48_16.pdf"
     # # filename = "3892_001.pdf"
     # pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I559057\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
     # pic_list = pdf2img(filename)
@@ -202,7 +210,7 @@ if __name__ == '__main__':
     #     # data = drawBox(binary)
     #     # keyword = "Kundennummer"
     #     # keyword = "Rechnungsnummer"
-    #     keyword = "Betrag"
+    #     keyword = "1053098196"
     #     tg = data.get(keyword)
     #     # cv.rectangle(img, (data['135011'][0][0], data['135011'][0][1]),
     #     #              (data['135011'][0][0] + data['135011'][0][2], data['135011'][0][1] + data['135011'][0][3]), (255, 0, 0), 1)
