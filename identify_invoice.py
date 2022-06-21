@@ -118,8 +118,9 @@ if __name__ == '__main__':
     getTemplate()
     getConfig()
     LANGUAGE = sys.argv[1]
-    RES_FOLDER = sys.argv[2]
-    FILELIST = getFlist(FOLDER)
+    INV_FOLDER = sys.argv[2]
+    RES_FOLDER = sys.argv[3]
+    FILELIST = getFlist(INV_FOLDER)
     # print(FILELIST)
     # pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I559057\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
     # steve's machine
