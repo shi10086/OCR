@@ -5,6 +5,9 @@ import cv2 as cv
 import math
 import pandas as pd
 import os.path
+from PIL import Image
+from PIL import ImageDraw
+import re
 
 
 def pdf2img(filename):
@@ -34,9 +37,9 @@ def pdf2img(filename):
         return []
 
 
-def identify_pic(img):
+def identify_pic(img, languae):
     data = {}
-    d = pytesseract.image_to_data(img, output_type=Output.DICT, lang="deu")
+    d = pytesseract.image_to_data(img, output_type=Output.DICT, lang=languae)
     for i in range(len(d['text'])):
         if 0 < len(d['text'][i]):
             (x, y, w, h) = (d['left'][i], d['top'][i], d['width'][i], d['height'][i])
@@ -65,7 +68,7 @@ def find_value(target, pos_lis):
     tg_center = calculate_center(target)
     for key in pos_lis.keys():
         tmp_pos_lis = pos_lis[key]
-        if not is_number(key):
+        if not is_invoice(key):
             continue
         for pos in tmp_pos_lis:
             if pos[0] + pos[2] < target_x or pos[1] + pos[3] < target_y + 2 or (
@@ -143,29 +146,35 @@ def drawBox(im):
             data[d['text'][i]] = ([d['left'][i], d['top'][i], d['width'][i], d['height'][i]])
 
             cv.rectangle(im, (x, y), (x + w, y + h), (255, 0, 0), 1)
+            pilimg = Image.fromarray(im)
+            draw = ImageDraw.Draw(pilimg)
+    cv.namedWindow("recoText", cv.WINDOW_NORMAL)
     cv.imshow("recoText", im)
     cv.waitKey(0)
     return data
 
 
-def is_number(s):
+def is_invoice(s):
     """
-    判断字符串是否为数字
+    判断字符串是否为发票号
     :param s: string
     :return: bool
     """
-    try:
-        float(s)
-        return True
-    except ValueError:
-        pass
-
-    try:
-        import unicodedata
-        unicodedata.numeric(s)
-        return True
-    except (TypeError, ValueError):
-        pass
+    re_str1 = "^\d{7,}[.]?$"
+    pattern1 = re.compile(re_str1)
+    if re.match(pattern1, s):
+        if re.match(pattern1, s).span()[1] == len(s):
+            return True
+    re_str2 = "^[a-zA-Z]+\d{5,}$"
+    pattern2 = re.compile(re_str2)
+    if re.match(pattern2, s):
+        if re.match(pattern2, s).span()[1] == len(s):
+            return True
+    re_str3 = "^\d*[a-zA-Z]+\d{5,}$"
+    pattern3 = re.compile(re_str3)
+    if re.match(pattern3, s):
+        if re.match(pattern3, s).span()[1] == len(s):
+            return True
 
     return False
 
@@ -182,8 +191,7 @@ def is_amount(s):
     :param s: string
     :return: bool
     """
-    import re
-    re_str = "(\d*[,.]?)*"
+    re_str = "(-?\d*[.]?)?(-?\d*[,]?)*(\d*[.]?\d*)?"
     pattern = re.compile(re_str)
     if re.match(pattern, s).span()[1] == len(s):
         return True
@@ -192,9 +200,9 @@ def is_amount(s):
 
 
 if __name__ == '__main__':
-    print(is_amount(''))
-    # # print(read_keywords("rules.xlsx"))
-    # filename = "Birgit Klaerner, reh 2808, FI FS IS-DE_2020_12_02_15_48_16.pdf"
+    print(is_invoice('70395500375397.'))
+    # print(read_keywords("rules.xlsx"))
+    # filename = "Birgit Klaerner, reh 2808, FI FS IS-DE_2020_12_02_15_48_04.pdf"
     # # filename = "3892_001.pdf"
     # pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I559057\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
     # pic_list = pdf2img(filename)
@@ -205,34 +213,34 @@ if __name__ == '__main__':
     #     # BGR = cv2.cvtColor(module,cv2.COLOR_BGR2RGB)# 转化为RGB格式
     #     # ret,thresh = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)
     #     # cv.imwrite(pic_name.split('.')[0]+'2.png', binary) # 保
-    #     data = identify_pic(binary)
+    #     data = identify_pic(img)
     #     # print(data)
     #     # data = drawBox(binary)
     #     # keyword = "Kundennummer"
     #     # keyword = "Rechnungsnummer"
-    #     keyword = "1053098196"
+    #     keyword = "DZ22010979"
     #     tg = data.get(keyword)
     #     # cv.rectangle(img, (data['135011'][0][0], data['135011'][0][1]),
     #     #              (data['135011'][0][0] + data['135011'][0][2], data['135011'][0][1] + data['135011'][0][3]), (255, 0, 0), 1)
     #     # cv.rectangle(img, (data['Fichtner'][0][0], data['Fichtner'][0][1]), (data['Fichtner'][0][0] + data[
     #     # 'Fichtner'][0][2], data['Fichtner'][0][1] + data['Fichtner'][0][3]), (255, 0, 0), 1)
-    #
+    #     print(tg)
     #     point_size = 1
     #     point_color = (0, 0, 255)  # BGR
     #     thickness = 4  # 0 、4、8
     #     # cv.circle(img, (data['Rechnungsnummer'][0][0], data['Rechnungsnummer'][0][1]), point_size, point_color, thickness)
     #     # cv.circle(img,(data['135011'][0][0], data['135011'][0][1]), point_size, point_color, thickness)
     #     # cv.circle(img, (data['Sofort'][0][0], data['Sofort'][0][1]), point_size, point_color, thickness)
-    #     cv.circle(img, (799, 1137), point_size, point_color, thickness)
+    #     cv.circle(img, (1051, 1375), point_size, point_color, thickness)
     #     # cv.circle(img, (data['Gesamtforderung'][0][0], data['Gesamtforderung'][0][1]), point_size, point_color, thickness)
     #     cv.namedWindow('img', cv.WINDOW_NORMAL)
-    #     cv.imshow("img", binary)
+    #     cv.imshow("img", img)
     #     cv.waitKey(0)
     #
     #     print(tg)
     #     if tg is not None:
     #         for pos in tg:
-    #             res = find_value(target=pos, pos_lis=data)
+    #             res = find_amount(target=pos, pos_lis=data)
     #             print(res)
     #             new_keyword = ""
     #             while new_keyword != "":

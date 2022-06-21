@@ -66,6 +66,8 @@ def getFlist(path):
 def match_invoice_amount(invoice_amount):
     invoice_list = invoice_amount["invoice"]
     amount = invoice_amount["amount"]
+    if len(amount) == 0:
+        return {"invoice": [], "amount": []}
     matched_amount = []
     for inv in invoice_list:
         inv_y = inv[1][1]
@@ -101,7 +103,7 @@ def write_excel(identified_res, save_path):
     #     print("fail to save the result")
     book = xlwt.Workbook(style_compression=0)
     sheet = book.add_sheet('invoice & amount', cell_overwrite_ok=True)
-    col = ('invoice number', 'amount')
+    col = ('Reference', 'Gross invoice amount')
     inv = identified_res["invoice"]
     amo = identified_res["amount"]
     for i in range(len(col)):
@@ -115,18 +117,20 @@ def write_excel(identified_res, save_path):
 if __name__ == '__main__':
     getTemplate()
     getConfig()
+    LANGUAGE = "deu"
     FILELIST = getFlist(FOLDER)
     # print(FILELIST)
     # pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I559057\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
     # steve's machine
-
+    final_res = {"invoice": [], "amount": []}
     for filename in FILELIST:
+        print(filename)
         pic_list = pdf2img("./invoices/" + filename)
         for pic_name in pic_list:
             img = cv.imread(pic_name)
             gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)  # 转化为灰度图
             ret, binary = cv.threshold(gray, 200, 255, cv.THRESH_BINARY)
-            data = identify_pic(binary)
+            data = identify_pic(img, languae=LANGUAGE)
             # cv.namedWindow('img', cv.WINDOW_NORMAL)
             # cv.imshow("img", binary)
             # cv.waitKey(0)
@@ -135,11 +139,9 @@ if __name__ == '__main__':
             for keyword in KEYWORD_LIST:
                 tg = data.get(keyword)
                 if tg is not None:
-                    print(keyword)
                     for pos in tg:
                         res = find_value(target=pos, pos_lis=data)
                         new_keyword = res["below"][0]
-                        print(new_keyword)
                         if len(new_keyword) < 7:
                             continue
                         invoice_amount["invoice"].append(res["below"])
@@ -155,21 +157,27 @@ if __name__ == '__main__':
             for keyword in KEYWORD_AMOUNT:
                 tg = data.get(keyword)
                 if tg is not None:
-                    print(keyword)
                     for pos in tg:
                         res = find_amount(target=pos, pos_lis=data)
                         new_keyword = res["below"][0]
+                        tg = res["below"][1]
                         invoice_amount["amount"].append(res["below"])
                         while new_keyword != '':
-                            new_pos = data.get(new_keyword)
-                            res = find_amount(target=new_pos[0], pos_lis=data)
+                            pre_keyword = new_keyword
+                            res = find_amount(target=tg, pos_lis=data)
                             new_keyword = res["below"][0]
-                            if new_keyword == '':
+                            tg = res["below"][1]
+                            if new_keyword == '' or pre_keyword == new_keyword:
                                 break
                             invoice_amount["amount"].append(res["below"])
             # if len(invoice_amount["amount"]) > len(invoice_amount["invoice"]):
             #     invoice_amount["amount"] = invoice_amount["amount"][:-1]
+            # print(invoice_amount)
             invoice_amount = match_invoice_amount(invoice_amount)
-            print(invoice_amount)
-            excel_file = pic_name[:-4]+".xls"
+            for inv in invoice_amount["invoice"]:
+                final_res["invoice"].append(inv)
+            for amo in invoice_amount["amount"]:
+                final_res["amount"].append(amo)
+            excel_file = pic_name[:-4] + ".xls"
             write_excel(identified_res=invoice_amount, save_path=excel_file)
+    write_excel(identified_res=final_res, save_path="res.xls")
