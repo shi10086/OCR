@@ -117,7 +117,8 @@ def write_excel(identified_res, save_path):
 if __name__ == '__main__':
     getTemplate()
     getConfig()
-    LANGUAGE = "deu"
+    LANGUAGE = sys.argv[1]
+    RES_FOLDER = sys.argv[2]
     FILELIST = getFlist(FOLDER)
     # print(FILELIST)
     # pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I559057\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
@@ -179,5 +180,5 @@ if __name__ == '__main__':
             for amo in invoice_amount["amount"]:
                 final_res["amount"].append(amo)
             excel_file = pic_name[:-4] + ".xls"
-            write_excel(identified_res=invoice_amount, save_path=excel_file)
-    write_excel(identified_res=final_res, save_path="res.xls")
+            write_excel(identified_res=invoice_amount, save_path=RES_FOLDER+excel_file)
+    write_excel(identified_res=final_res, save_path=RES_FOLDER+"res.xls")
