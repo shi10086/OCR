@@ -4,7 +4,7 @@ import cv2 as cv
 import pytesseract
 from pytesseract.pytesseract import TesseractError
 
-from pdf2img import pdf2img, find_value, identify_pic, find_amount
+from pdf2img import pdf2img, find_value, identify_pic, find_amount, identify_pic_easyocr
 import configparser
 import sys
 import os
@@ -133,7 +133,8 @@ if __name__ == '__main__':
             img = cv.imread(pic_name)
             # gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)  # 转化为灰度图
             # ret, binary = cv.threshold(gray, 200, 255, cv.THRESH_BINARY)
-            data = identify_pic(img, languae=LANGUAGE)
+            # data = identify_pic(img, languae=LANGUAGE)
+            data = identify_pic_easyocr(img, language=LANGUAGE)
             # cv.namedWindow('img', cv.WINDOW_NORMAL)
             # cv.imshow("img", binary)
             # cv.waitKey(0)
@@ -187,5 +188,6 @@ if __name__ == '__main__':
             for amo in invoice_amount["amount"]:
                 final_res["amount"].append(amo)
             excel_file = pic_name[:-4] + ".xls"
-            write_excel(identified_res=invoice_amount, save_path=RES_FOLDER+"\\"+excel_file)
+            write_excel(identified_res=invoice_amount,
+                        save_path=RES_FOLDER+"\\"+excel_file)
     #write_excel(identified_res=final_res, save_path=RES_FOLDER+"\\res.xls")

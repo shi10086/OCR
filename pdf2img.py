@@ -8,6 +8,7 @@ import os.path
 from PIL import Image
 from PIL import ImageDraw
 import re
+import easyocr
 
 
 def pdf2img(filename):
@@ -44,11 +45,30 @@ def identify_pic(img, languae):
     d = pytesseract.image_to_data(img, output_type=Output.DICT, lang=languae)
     for i in range(len(d['text'])):
         if 0 < len(d['text'][i]):
-            (x, y, w, h) = (d['left'][i], d['top'][i], d['width'][i], d['height'][i])
+            (x, y, w, h) = (d['left'][i], d['top']
+                            [i], d['width'][i], d['height'][i])
             if data.get(d['text'][i].upper()):
-                data[d['text'][i].upper()].append([d['left'][i], d['top'][i], d['width'][i], d['height'][i]])
+                data[d['text'][i].upper()].append(
+                    [d['left'][i], d['top'][i], d['width'][i], d['height'][i]])
             else:
-                data[d['text'][i].upper()] = ([[d['left'][i], d['top'][i], d['width'][i], d['height'][i]]])
+                data[d['text'][i].upper()] = (
+                    [[d['left'][i], d['top'][i], d['width'][i], d['height'][i]]])
+    return data
+
+
+def identify_pic_easyocr(img, language):
+    '''ocr 识别'''
+    reader = easyocr.Reader([language], gpu=False)
+    items = reader.readtext(img, width_ths=0.3)
+    # 将列表结果转化为dictionary
+    data = {}
+    for item in items:
+        if data.get(item[1]):
+            data[item[1].upper()].append([item[0][3][0], item[0][3][1], abs(
+                item[0][2][0] - item[0][0][0]), abs(item[0][2][1] - item[0][0][1])])
+        else:
+            data[item[1].upper()] = [[item[0][3][0], item[0][3][1], abs(
+                item[0][2][0] - item[0][0][0]), abs(item[0][2][1] - item[0][0][1])]]  # 取左上角坐标和宽高
     return data
 
 
@@ -81,7 +101,8 @@ def find_value(target, pos_lis):
             # 计算距离以更新结果
             pos_center = calculate_center(pos)
             # tmp_dis = abs(pos[0] - target_x) + abs(pos[1] - target_y)
-            tmp_dis = abs(tg_center[0] - pos_center[0]) + abs(tg_center[1] - pos_center[1])
+            tmp_dis = abs(tg_center[0] - pos_center[0]) + \
+                abs(tg_center[1] - pos_center[1])
             if pos[0] >= target_x + width:
                 if tmp_dis < min_right_dis:
                     min_right_dis = tmp_dis
@@ -120,7 +141,8 @@ def find_amount(target, pos_lis):
             # 计算距离以更新结果
             pos_center = calculate_center(pos)
             # tmp_dis = abs(pos[0] - target_x) + abs(pos[1] - target_y)
-            tmp_dis = abs(tg_center[0] - pos_center[0]) + abs(tg_center[1] - pos_center[1])
+            tmp_dis = abs(tg_center[0] - pos_center[0]) + \
+                abs(tg_center[1] - pos_center[1])
             if pos[0] >= target_x + width:
                 if tmp_dis < min_right_dis:
                     min_right_dis = tmp_dis
@@ -144,8 +166,10 @@ def drawBox(im):
     d = pytesseract.image_to_data(im, output_type=Output.DICT, lang="deu")
     for i in range(len(d['text'])):
         if 0 < len(d['text'][i]):
-            (x, y, w, h) = (d['left'][i], d['top'][i], d['width'][i], d['height'][i])
-            data[d['text'][i]] = ([d['left'][i], d['top'][i], d['width'][i], d['height'][i]])
+            (x, y, w, h) = (d['left'][i], d['top']
+                            [i], d['width'][i], d['height'][i])
+            data[d['text'][i]] = (
+                [d['left'][i], d['top'][i], d['width'][i], d['height'][i]])
 
             cv.rectangle(im, (x, y), (x + w, y + h), (255, 0, 0), 1)
             pilimg = Image.fromarray(im)
@@ -209,7 +233,7 @@ if __name__ == '__main__':
     # filename = "Birgit Klaerner, reh 2808, FI FS IS-DE_2020_12_02_15_48_04.pdf"
     # # filename = "3892_001.pdf"
     pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I559057\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
-    a = identify_pic(img,"pol")
+    a = identify_pic(img, "pol")
     print(a)
     # pic_list = pdf2img(filename)
     # for pic_name in pic_list:
