@@ -146,7 +146,7 @@ if __name__ == '__main__':
     getConfig()
     FILELIST = getFlist(INV_FOLDER)
     # print(FILELIST)
-    pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I559057\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
+    # pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I559057\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
     # steve's machine
     final_res = {"invoice": [], "amount": []}
     for filename in FILELIST:
