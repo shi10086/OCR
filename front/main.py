@@ -50,5 +50,32 @@ def getTempalte():
     data = readTemplate()
     return data
 
+@app.route('/saveTemplate',methods=['POST'])
+def saveTemplate():
+    args = request.json
+    items = args['data']
+  
+    cf = configparser.ConfigParser()
+    for item in items:
+        lan = item['lan']
+        reference = item['references']
+        amount = item['amount']
+    
+    #cf.read("../template.conf")
+        cf[lan] = {
+            'reference': "\n".join(reference.split(",")),
+            'amount': "\n".join(amount.split(","))
+        }    
+    with open("../template.conf", 'w') as configfile:
+        cf.write(configfile)
+    return 'success'
+
+def getFlist(path):
+    return os.listdir(path)
+
+
 if __name__=="__main__":
+    filePath = sys.argv[1]
+    lists = getFlist(filePath)
+    print(lists)
     app.run(debug=True)
