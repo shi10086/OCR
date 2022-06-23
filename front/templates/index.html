@@ -73,11 +73,13 @@
                             </el-tab-pane>
                             <el-tab-pane>
                                 <span slot="label"><i class="el-icon-document-copy"></i> ACCESS RESULT</span>
-                                <el-select v-model="value" placeholder="choose file">
-                                    <el-option v-for="item in options" :key="item.value" :label="item.label"
-                                        :value="item.value">
+                                <el-select v-model="value" placeholder="choose file" @change="readFile">
+                                    <el-option v-for="item in fileList.excelList" :key="item" :label="item"
+                                        :value="item">
                                     </el-option>
                                 </el-select>
+                                <a href="/file/Birgit%20Klaerner,%20reh%202808,%20FI%20FS%20IS-DE_2020_11_27_12_56_53_page_0.xls"></a>
+                                
                             </el-tab-pane>
 
                         </el-tabs>
@@ -107,14 +109,26 @@
                 activeName: 'german',
                 configList: [],
                 flag: false,
+                fileList: [],
+                value: ""
             }
         },
         mounted: function () {
+            this.getFileList();
             this.getConfig();
 
         },
         methods: {
+            getFileList() {
+                _this = this;
+                axios.get('/getFileList').then(res => {
+                    _this.fileList = res.data
+                    console.log(res.data)
+                })
+            },
+            readFile(){
 
+            },
             onSubmit() {
 
                 var _this = this;
