@@ -33,7 +33,7 @@
                                 <el-row :gutter="20">
                                     <el-container>
                                         <el-header>
-                                            <el-alert title="Change The Config If You Want To" type="success" center
+                                            <el-alert title="CHANGE THE CONFIG IF YOU WANT TO" type="success" center
                                                 :closable="false">
                                             </el-alert>
                                         </el-header>
@@ -73,11 +73,39 @@
                             </el-tab-pane>
                             <el-tab-pane>
                                 <span slot="label"><i class="el-icon-document-copy"></i> ACCESS RESULT</span>
-                                <el-select v-model="value" placeholder="choose file">
-                                    <el-option v-for="item in options" :key="item.value" :label="item.label"
-                                        :value="item.value">
-                                    </el-option>
-                                </el-select>
+                                <el-container>
+                                    <el-header>
+                                        <el-header>
+                                            <el-alert title="CHOOSE THE FILE YOU WANT TO VERIFY" type="success" center
+                                                :closable="false">
+                                            </el-alert>
+                                        </el-header>
+                                    </el-header>
+                                    <el-main>
+                                        <el-select v-model="value" placeholder="choose file" @change="readFile">
+                                            <el-option v-for="item in fileList.excelList" :key="item" :label="item"
+                                                :value="item">
+                                            </el-option>
+                                        </el-select>
+                                        <H5>{{value}}</H5>
+                                        <el-divider></el-divider>
+
+                                        <el-row>
+                                            <el-col :span="12">
+                                                <iframe :src="excelSrc" height="500px" width="90%"></iframe>
+                                            </el-col>
+                                            <el-col :span="12">
+                                                <el-carousel height="800px" :autoplay=false>
+                                                    <el-carousel-item v-for="item in imgUrl" :key="item">
+                                                        <el-image  :src="item"  :preview-src-list="srcList"  style=" width: 400px" fit='cover'/>
+                                                    </el-carousel-item>
+                                               
+                                            </el-col>
+
+                                        </el-row>
+                                    </el-main>
+                                </el-container>
+
                             </el-tab-pane>
 
                         </el-tabs>
@@ -98,23 +126,47 @@
 </style>
 <script>
     new Vue({
-        //    此处指向vue组件所要渲染的DOM标签 <div id="box"></div>   el:'#box'  用id属性标识 也可用class属性
-        // 如果是class <div class="box"></div>   el:'.box' 
-        // 总之最外层div用class或id绑定js ，下面el对应body对外层div选择器名称，绑定之后才可以使用elementui中组件内容
+
         el: '#box',
         data() {
             return {
+                srcList: [], //大图
+                imgUrl: [],
+                excelSrc: "",
                 activeName: 'german',
                 configList: [],
                 flag: false,
+                fileList: [],
+                value: ""
             }
         },
         mounted: function () {
+            this.getFileList();
             this.getConfig();
 
         },
         methods: {
-
+            getFileList() {
+                _this = this;
+                axios.get('/getFileList').then(res => {
+                    _this.fileList = res.data
+                    console.log(res.data)
+                })
+            },
+            readFile() {
+                var fileName = this.value.split(".")[0]
+                var imgList = this.fileList.pgList;
+                this.imgUrl = imgList.filter(ele => {
+                    return ele.indexOf(fileName) > -1
+                })
+                this.imgUrl = this.imgUrl.map(ele => {
+                    return '/imgFile/' + ele
+                })
+                this.srcList = this.imgUrl;
+                this.excelSrc = "/fileExcle/" + this.value;
+                //this.imgUrl = '/imgFile/'+fileName+'.jpg';
+                console.log(this.imgUrl)
+            },
             onSubmit() {
 
                 var _this = this;

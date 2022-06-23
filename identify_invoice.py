@@ -9,6 +9,8 @@ import configparser
 import sys
 import os
 import xlwt
+from PIL import ImageFont, ImageDraw, Image
+import numpy as np
 
 global FOLDER
 global KEYWORD_LIST
@@ -66,6 +68,7 @@ def getFlist(path):
 def match_invoice_amount(invoice_amount):
     invoice_list = invoice_amount["invoice"]
     amount = invoice_amount["amount"]
+    # print(invoice_amount)
     if len(amount) == 0:
         return {"invoice": [], "amount": []}
     matched_amount = []
@@ -86,32 +89,54 @@ def match_invoice_amount(invoice_amount):
 
 
 def write_excel(identified_res, save_path):
-    # try:
-    #     book = xlwt.Workbook(encoding='utf-8', style_compression=0)
-    #     sheet = book.add_sheet('invoice & amount', cell_overwrite_ok=True)
-    #     col = ('invoice number', 'amount')
-    #     inv = identified_res["invoice"]
-    #     amo = identified_res["amount"]
-    #     for i in range(len(col)):
-    #         sheet.write(0, i, col[i])
-    #     for row in range(len(inv)):
-    #         sheet.write(row + 1, 0, inv[row])
-    #         sheet.write(row + 1, 1, amo[row])
-    #     book.save(save_path)
-    # except Exception as e:
-    #     print(e)
-    #     print("fail to save the result")
-    book = xlwt.Workbook(style_compression=0)
-    sheet = book.add_sheet('invoice & amount', cell_overwrite_ok=True)
-    col = ('Reference', 'Gross invoice amount')
-    inv = identified_res["invoice"]
-    amo = identified_res["amount"]
-    for i in range(len(col)):
-        sheet.write(0, i, col[i])
-    for row in range(len(inv)):
-        sheet.write(row + 1, 0, inv[row][0])
-        sheet.write(row + 1, 1, amo[row][0])
-    book.save(save_path)
+    try:
+        book = xlwt.Workbook(style_compression=0)
+        sheet = book.add_sheet('invoice & amount', cell_overwrite_ok=True)
+        col = ('Reference', 'Gross invoice amount')
+        inv = identified_res["invoice"]
+        amo = identified_res["amount"]
+        for i in range(len(col)):
+            sheet.write(0, i, col[i])
+        for row in range(len(inv)):
+            sheet.write(row + 1, 0, inv[row][0])
+            sheet.write(row + 1, 1, amo[row][0])
+        book.save(save_path)
+    except Exception as e:
+        print(e)
+        print("fail to save the result")
+    # book = xlwt.Workbook(style_compression=0)
+    # sheet = book.add_sheet('invoice & amount', cell_overwrite_ok=True)
+    # col = ('Reference', 'Gross invoice amount')
+    # inv = identified_res["invoice"]
+    # amo = identified_res["amount"]
+    # for i in range(len(col)):
+    #     sheet.write(0, i, col[i])
+    # for row in range(len(inv)):
+    #     sheet.write(row + 1, 0, inv[row][0])
+    #     sheet.write(row + 1, 1, amo[row][0])
+    # book.save(save_path)
+
+
+def drawBox(im, result, save_path):
+    inv = result["invoice"]
+    amo = result["amount"]
+    for i in range(len(inv)):
+        (x, y, w, h) = (inv[i][1][0], inv[i][1][1], inv[i][1][2], inv[i][1][3])
+        cv.rectangle(im, (x, y), (x + w, y + h), (0, 0, 255), 2)
+        cv.putText(im, str(i), (x + w, y + h),
+                   cv.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 1)
+        (x, y, w, h) = (amo[i][1][0], amo[i][1][1], amo[i][1][2], amo[i][1][3])
+        cv.rectangle(im, (x, y), (x + w, y + h), (0, 0, 255), 2)
+        cv.putText(im, str(i), (x + w, y + h),
+                   cv.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 1)
+    try:
+        cv.imwrite(save_path, im)
+    except Exception as e:
+        print(e)
+        print("fail to save the result")
+    # cv.namedWindow("recoText", cv.WINDOW_NORMAL)
+    # cv.imshow("recoText", im)
+    # cv.waitKey(0)
 
 
 if __name__ == '__main__':
@@ -129,6 +154,10 @@ if __name__ == '__main__':
     for filename in FILELIST:
         print(filename)
         pic_list = pdf2img(INV_FOLDER + "/" + filename)
+        if len(pic_list) == 0:
+            continue
+        tmp_file_res = {"invoice": [], "amount": []}
+        pic_count = 1
         for pic_name in pic_list:
             img = cv.imread(pic_name)
             # gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)  # 转化为灰度图
@@ -170,13 +199,15 @@ if __name__ == '__main__':
                         res = find_amount(target=pos, pos_lis=data)
                         new_keyword = res["below"][0]
                         tg = res["below"][1]
+                        if new_keyword == '':
+                            break
                         invoice_amount["amount"].append(res["below"])
                         while new_keyword != '':
                             pre_keyword = new_keyword
                             res = find_amount(target=tg, pos_lis=data)
                             new_keyword = res["below"][0]
                             tg = res["below"][1]
-                            if new_keyword == '' or pre_keyword == new_keyword:
+                            if new_keyword == '':
                                 break
                             invoice_amount["amount"].append(res["below"])
             # if len(invoice_amount["amount"]) > len(invoice_amount["invoice"]):
@@ -184,10 +215,17 @@ if __name__ == '__main__':
             # print(invoice_amount)
             invoice_amount = match_invoice_amount(invoice_amount)
             for inv in invoice_amount["invoice"]:
-                final_res["invoice"].append(inv)
+                # final_res["invoice"].append(inv)
+                tmp_file_res["invoice"].append(inv)
             for amo in invoice_amount["amount"]:
-                final_res["amount"].append(amo)
-            excel_file = pic_name[:-4] + ".xls"
-            write_excel(identified_res=invoice_amount,
-                        save_path=RES_FOLDER+"\\"+excel_file)
-    #write_excel(identified_res=final_res, save_path=RES_FOLDER+"\\res.xls")
+                # final_res["amount"].append(amo)
+                tmp_file_res["amount"].append(amo)
+            pic_file = filename[:-4] + "_" + str(pic_count) + ".jpg"
+            drawBox(im=img, result=invoice_amount,
+                    save_path=RES_FOLDER + "\\" + pic_file)
+            pic_count += 1
+        excel_file = filename[:-4] + ".xls"
+        write_excel(identified_res=tmp_file_res,
+                    save_path=RES_FOLDER + "\\" + excel_file)
+
+    # write_excel(identified_res=final_res, save_path=RES_FOLDER+"\\res.xls")

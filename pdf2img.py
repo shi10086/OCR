@@ -172,11 +172,10 @@ def drawBox(im):
                 [d['left'][i], d['top'][i], d['width'][i], d['height'][i]])
 
             cv.rectangle(im, (x, y), (x + w, y + h), (255, 0, 0), 1)
-            pilimg = Image.fromarray(im)
-            draw = ImageDraw.Draw(pilimg)
-    cv.namedWindow("recoText", cv.WINDOW_NORMAL)
-    cv.imshow("recoText", im)
-    cv.waitKey(0)
+    cv.imwrite("test.jpg", im)
+    # cv.namedWindow("recoText", cv.WINDOW_NORMAL)
+    # cv.imshow("recoText", im)
+    # cv.waitKey(0)
     return data
 
 
@@ -226,15 +225,15 @@ def is_amount(s):
 
 
 if __name__ == '__main__':
-    print(is_invoice('70395500375397.'))
-    img = cv.imread("20201006.png")
-
-    # print(read_keywords("rules.xlsx"))
-    # filename = "Birgit Klaerner, reh 2808, FI FS IS-DE_2020_12_02_15_48_04.pdf"
-    # # filename = "3892_001.pdf"
+    # print(is_amount("12.20.20"))
+    # # print(read_keywords("rules.xlsx"))
+    filename = "_page_0.png"
+    # filename = "3892_001.pdf"
+    img = cv.imread(filename)
     pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I559057\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
-    a = identify_pic(img, "pol")
-    print(a)
+    drawBox(img)
+    # a = identify_pic(img,"pol")
+    # print(a)
     # pic_list = pdf2img(filename)
     # for pic_name in pic_list:
     #     img = cv.imread(pic_name)
