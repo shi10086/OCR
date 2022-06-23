@@ -41,7 +41,7 @@ def getTemplate():
     print(key_refrences)
     global KEYWORD_LIST
     KEYWORD_LIST = key_refrences
-    key_amount = db_config.get('german', 'amout').strip().split('\n')
+    key_amount = db_config.get('german', 'amount').strip().split('\n')
     global KEYWORD_AMOUNT
     KEYWORD_AMOUNT = key_amount
     print(key_amount)
