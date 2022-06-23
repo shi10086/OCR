@@ -9,6 +9,8 @@ import configparser
 import sys
 import os
 import xlwt
+from PIL import ImageFont, ImageDraw, Image
+import numpy as np
 
 global FOLDER
 global KEYWORD_LIST
@@ -120,9 +122,11 @@ def drawBox(im, result, save_path):
     amo = result["amount"]
     for i in range(len(inv)):
         (x, y, w, h) = (inv[i][1][0], inv[i][1][1], inv[i][1][2], inv[i][1][3])
-        cv.rectangle(im, (x, y), (x + w, y + h), (255, 0, 0), 1)
+        cv.rectangle(im, (x, y), (x + w, y + h), (0, 0, 255), 2)
+        cv.putText(im, str(i), (x + w, y + h), cv.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 1)
         (x, y, w, h) = (amo[i][1][0], amo[i][1][1], amo[i][1][2], amo[i][1][3])
-        cv.rectangle(im, (x, y), (x + w, y + h), (255, 0, 0), 1)
+        cv.rectangle(im, (x, y), (x + w, y + h), (0, 0, 255), 2)
+        cv.putText(im, str(i), (x + w, y + h), cv.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 1)
     try:
         cv.imwrite(save_path, im)
     except Exception as e:
@@ -142,7 +146,7 @@ if __name__ == '__main__':
     getConfig()
     FILELIST = getFlist(INV_FOLDER)
     # print(FILELIST)
-    # pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I559057\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
+    pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I559057\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
     # steve's machine
     final_res = {"invoice": [], "amount": []}
     for filename in FILELIST:
