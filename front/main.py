@@ -94,11 +94,16 @@ def getFlist(path):
     return os.listdir(path)
 
 
+@app.route('/imgFile/<path:index_path>')
+def img_view(index_path=''):
+    path = os.path.join(filePath, index_path)
+    return send_file(path, mimetype='image/gif')
+
 @app.route('/fileExcle/<path:index_path>')
 def file_view(index_path=''):
     path = os.path.join(filePath, index_path)
     df = pd.read_excel(path)
-    table_html = df.to_html()
+    table_html = df.to_html(header = True,justify='center',col_space=150)
     return f"""
     <html>
     <body>
@@ -107,20 +112,7 @@ def file_view(index_path=''):
     </html>
     
     """
-    # if os.path.isfile(path):
 
-    # def send_chunk():  # 流式读取
-    #     with open(path, 'rb') as target_file:
-    #         while True:
-    #             chunk = target_file.read(20 * 1024 * 1024)  # 每次读取20M
-    #             if not chunk:
-    #                 break
-    #             yield chunk
-    # response = make_response(send_file(path_or_file=path, as_attachment=as_attachment))
-    # response.headers[headers[0]] = headers[1]
-    #    return app.send_static_file(path)
-    # else:
-    #     return '404 Not Found'
 
 
 if __name__ == "__main__":

@@ -33,7 +33,7 @@
                                 <el-row :gutter="20">
                                     <el-container>
                                         <el-header>
-                                            <el-alert title="Change The Config If You Want To" type="success" center
+                                            <el-alert title="CHANGE THE CONFIG IF YOU WANT TO" type="success" center
                                                 :closable="false">
                                             </el-alert>
                                         </el-header>
@@ -73,13 +73,35 @@
                             </el-tab-pane>
                             <el-tab-pane>
                                 <span slot="label"><i class="el-icon-document-copy"></i> ACCESS RESULT</span>
-                                <el-select v-model="value" placeholder="choose file" @change="readFile">
-                                    <el-option v-for="item in fileList.excelList" :key="item" :label="item"
-                                        :value="item">
-                                    </el-option>
-                                </el-select>
-                                <a href="/file/Birgit%20Klaerner,%20reh%202808,%20FI%20FS%20IS-DE_2020_11_27_12_56_53_page_0.xls"></a>
-                                
+                                <el-container>
+                                    <el-header>
+                                        <el-header>
+                                            <el-alert title="CHOOSE THE FILE YOU WANT TO VERIFY" type="success" center
+                                                :closable="false">
+                                            </el-alert>
+                                        </el-header>
+                                    </el-header>
+                                    <el-main>
+                                        <el-select v-model="value" placeholder="choose file" @change="readFile">
+                                            <el-option v-for="item in fileList.excelList" :key="item" :label="item"
+                                                :value="item">
+                                            </el-option>
+                                        </el-select>
+                                        <H5>{{value}}</H5>
+                                        <el-divider></el-divider>
+
+                                        <el-row>
+                                            <el-col :span="12">
+                                                <iframe :src="excelSrc" height="500px" width="90%"></iframe>
+                                            </el-col>
+                                            <el-col :span="12">
+                                                <img :src="imgUrl" height="500px" width="90%" style="position:relative">
+                                            </el-col>
+
+                                        </el-row>
+                                    </el-main>
+                                </el-container>
+
                             </el-tab-pane>
 
                         </el-tabs>
@@ -100,12 +122,12 @@
 </style>
 <script>
     new Vue({
-        //    此处指向vue组件所要渲染的DOM标签 <div id="box"></div>   el:'#box'  用id属性标识 也可用class属性
-        // 如果是class <div class="box"></div>   el:'.box' 
-        // 总之最外层div用class或id绑定js ，下面el对应body对外层div选择器名称，绑定之后才可以使用elementui中组件内容
+      
         el: '#box',
         data() {
             return {
+                imgUrl:"",
+                excelSrc: "",
                 activeName: 'german',
                 configList: [],
                 flag: false,
@@ -126,8 +148,11 @@
                     console.log(res.data)
                 })
             },
-            readFile(){
+            readFile() {
+                var fileName = this.value.split(".")[0]
 
+                this.excelSrc = "/fileExcle/" + this.value;
+                this.imgUrl = '/imgFile/'+fileName+'.png';
             },
             onSubmit() {
 
