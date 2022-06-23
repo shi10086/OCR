@@ -56,10 +56,10 @@ def file_filter(types, f):
 def getFileList():
     lists = getFlist(filePath)
     excelList = list(filter(partial(file_filter, ['.xls']), lists))
-    pngList = list(filter(partial(file_filter, ['.png']), lists))
+    pgList = list(filter(partial(file_filter, ['.jpg']), lists))
     return {
         'excelList': excelList,
-        'pngList': pngList
+        'pgList': pgList
     }
 
 
@@ -97,7 +97,7 @@ def getFlist(path):
 @app.route('/imgFile/<path:index_path>')
 def img_view(index_path=''):
     path = os.path.join(filePath, index_path)
-    return send_file(path, mimetype='image/gif')
+    return send_file(path, mimetype='image/jpg')
 
 @app.route('/fileExcle/<path:index_path>')
 def file_view(index_path=''):
