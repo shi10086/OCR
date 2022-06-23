@@ -32,16 +32,16 @@ global KEYWORD_AMOUNT
 # pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I333224\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
 
 
-def getTemplate():
+def getTemplate(country):
     cwd = os.path.join(os.getcwd(), sys.argv[0])
     root_folder = (os.path.dirname(cwd))
     db_config = configparser.ConfigParser()
     db_config.read(os.path.join(root_folder, 'template.conf'))
-    key_refrences = db_config.get('german', 'reference').strip().split('\n')
+    key_refrences = db_config.get(country, 'reference').strip().split('\n')
     print(key_refrences)
     global KEYWORD_LIST
     KEYWORD_LIST = key_refrences
-    key_amount = db_config.get('german', 'amout').strip().split('\n')
+    key_amount = db_config.get(country, 'amount').strip().split('\n')
     global KEYWORD_AMOUNT
     KEYWORD_AMOUNT = key_amount
     print(key_amount)
@@ -115,11 +115,12 @@ def write_excel(identified_res, save_path):
 
 
 if __name__ == '__main__':
-    getTemplate()
-    getConfig()
     LANGUAGE = sys.argv[1]
     INV_FOLDER = sys.argv[2]
     RES_FOLDER = sys.argv[3]
+    COUNTRY = sys.argv[4]
+    getTemplate(COUNTRY)
+    getConfig()
     FILELIST = getFlist(INV_FOLDER)
     # print(FILELIST)
     # pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I559057\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
@@ -127,11 +128,11 @@ if __name__ == '__main__':
     final_res = {"invoice": [], "amount": []}
     for filename in FILELIST:
         print(filename)
-        pic_list = pdf2img("./invoices/" + filename)
+        pic_list = pdf2img(INV_FOLDER + "/" + filename)
         for pic_name in pic_list:
             img = cv.imread(pic_name)
-            gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)  # 转化为灰度图
-            ret, binary = cv.threshold(gray, 200, 255, cv.THRESH_BINARY)
+            # gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)  # 转化为灰度图
+            # ret, binary = cv.threshold(gray, 200, 255, cv.THRESH_BINARY)
             data = identify_pic(img, languae=LANGUAGE)
             # cv.namedWindow('img', cv.WINDOW_NORMAL)
             # cv.imshow("img", binary)
@@ -139,25 +140,30 @@ if __name__ == '__main__':
             invoice_amount = {"invoice": [], "amount": []}
             # 识别发票
             for keyword in KEYWORD_LIST:
-                tg = data.get(keyword)
+                tg = data.get(keyword.upper())
                 if tg is not None:
                     for pos in tg:
                         res = find_value(target=pos, pos_lis=data)
                         new_keyword = res["below"][0]
-                        if len(new_keyword) < 7:
-                            continue
+                        tg = res["below"][1]
+                        if new_keyword == '':
+                            break
+                        # if len(new_keyword) < 7:
+                        #     continue
                         invoice_amount["invoice"].append(res["below"])
                         tmp_idx = 0
                         while new_keyword != "":
-                            new_pos = data.get(new_keyword)
-                            res = find_value(target=new_pos[tmp_idx], pos_lis=data)
+                            res = find_value(target=tg, pos_lis=data)
                             new_keyword = res["below"][0]
-                            if len(new_keyword) < 7:
+                            tg = res["below"][1]
+                            # if len(new_keyword) < 7:
+                            #     break
+                            if new_keyword == '':
                                 break
                             invoice_amount["invoice"].append(res["below"])
             # 按照发票数量识别金额
             for keyword in KEYWORD_AMOUNT:
-                tg = data.get(keyword)
+                tg = data.get(keyword.upper())
                 if tg is not None:
                     for pos in tg:
                         res = find_amount(target=pos, pos_lis=data)
@@ -182,4 +188,4 @@ if __name__ == '__main__':
                 final_res["amount"].append(amo)
             excel_file = pic_name[:-4] + ".xls"
             write_excel(identified_res=invoice_amount, save_path=RES_FOLDER+"\\"+excel_file)
-    write_excel(identified_res=final_res, save_path=RES_FOLDER+"\\res.xls")
+    #write_excel(identified_res=final_res, save_path=RES_FOLDER+"\\res.xls")

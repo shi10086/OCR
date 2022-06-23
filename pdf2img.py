@@ -29,11 +29,13 @@ def pdf2img(filename):
             trans = fitz.Matrix(zoom_x, zoom_y).prerotate(rotate)
             pix = page.get_pixmap(matrix=trans, alpha=False)
             pdf_file = os.path.basename(filename)
-            pic_name = pdf_file.split(".")[0] + "_page_" + str(page_num) + ".png"
+            # pic_name = pdf_file.split(".")[0] + "_page_" + str(page_num) + ".png"
+            pic_name = "page_" + str(page_num) + ".png"
             pix.save(pic_name)
             pic_list.append(pic_name)
         return pic_list
     except:
+        print("error")
         return []
 
 
@@ -43,10 +45,10 @@ def identify_pic(img, languae):
     for i in range(len(d['text'])):
         if 0 < len(d['text'][i]):
             (x, y, w, h) = (d['left'][i], d['top'][i], d['width'][i], d['height'][i])
-            if data.get(d['text'][i]):
-                data[d['text'][i]].append([d['left'][i], d['top'][i], d['width'][i], d['height'][i]])
+            if data.get(d['text'][i].upper()):
+                data[d['text'][i].upper()].append([d['left'][i], d['top'][i], d['width'][i], d['height'][i]])
             else:
-                data[d['text'][i]] = ([[d['left'][i], d['top'][i], d['width'][i], d['height'][i]]])
+                data[d['text'][i].upper()] = ([[d['left'][i], d['top'][i], d['width'][i], d['height'][i]]])
     return data
 
 
@@ -201,10 +203,14 @@ def is_amount(s):
 
 if __name__ == '__main__':
     print(is_invoice('70395500375397.'))
+    img = cv.imread("20201006.png")
+
     # print(read_keywords("rules.xlsx"))
     # filename = "Birgit Klaerner, reh 2808, FI FS IS-DE_2020_12_02_15_48_04.pdf"
     # # filename = "3892_001.pdf"
-    # pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I559057\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
+    pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I559057\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
+    a = identify_pic(img,"pol")
+    print(a)
     # pic_list = pdf2img(filename)
     # for pic_name in pic_list:
     #     img = cv.imread(pic_name)
