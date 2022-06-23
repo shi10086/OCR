@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Config for OCR</title>
+
+    <!--引入 element-ui 的样式，-->
+    <link rel="stylesheet" href="../static/index.css">
+    <!-- 必须先引入vue，  后使用element-ui -->
+    <script src="../static/vue.js"></script>
+    <!-- 引入element 的组件库-->
+    <script src="../static/index.js"></script>
+    <script src="../static/axios.min.js"></script>
+</head>
+<style>
+
+</style>
+
+<body>
+    <div id="box" class="box">
+        <template>
+            <el-container>
+                <el-header>
+                    <el-alert title="Change The Config If You Want To" type="success">
+                    </el-alert>
+                  
+                </el-header>
+                <el-main>
+                    <el-row :gutter="20">
+                        <el-col :span="12" :offset="6">
+                            <el-tabs type="border-card" v-model="activeName">
+                                <el-tab-pane v-for="item in configList" :label="item.lan" :name="item.lan">
+                                    <el-form label-width="100px" class="demo-ruleForm" >
+                                        <el-form-item label="reference">
+                                            <el-input type="textarea" v-model="item.references"></el-input>
+                                        </el-form-item>
+                                        <el-form-item label="amount">
+                                            <el-input type="textarea" v-model="item.amount"></el-input>
+                                        </el-form-item>
+                                        <el-form-item>
+                                            <el-button type="primary" @click="onSubmit">Save</el-button>
+                                            <el-button>Cancle</el-button>
+                                        </el-form-item>
+                                    </el-form>
+
+
+                                </el-tab-pane>
+                            </el-tabs>
+
+                        </el-col>
+                    </el-row>
+                </el-main>
+
+            </el-container>
+
+
+        </template>
+
+    </div>
+</body>
+<script>
+    new Vue({
+        //    此处指向vue组件所要渲染的DOM标签 <div id="box"></div>   el:'#box'  用id属性标识 也可用class属性
+        // 如果是class <div class="box"></div>   el:'.box' 
+        // 总之最外层div用class或id绑定js ，下面el对应body对外层div选择器名称，绑定之后才可以使用elementui中组件内容
+        el: '#box',
+        data() {
+            return {
+                activeName:'german',
+                configList: [{
+                    lan: 'test'
+                }],
+                flag: false,
+            }
+        },
+        mounted: function () {
+            this.getConfig();
+
+        },
+        methods: {
+            getConfig() {
+                var _this = this;
+                // Make a request for a user with a given ID
+                axios.get('/getTemplate')
+                    .then(function (response) {
+                        // handle success
+                        _this.configList = response.data.data;
+                        console.log(_this.configList);
+                        _this.flag = true;
+                    })
+                    .catch(function (error) {
+                        // handle error
+                        console.log(error);
+                    })
+                    .then(function () {
+                        // always executed
+                    });
+            }
+        }
+    })   
+</script>
+
+</html>
