@@ -1,3 +1,4 @@
+import datetime
 import os
 
 import cv2 as cv
@@ -137,11 +138,36 @@ def drawBox(im, result, save_path):
     # cv.waitKey(0)
 
 
+def make_dir(res_folder):
+    today = str(datetime.date.today())
+    os.makedirs(res_folder + today, exist_ok=True)
+    return res_folder + "\\" + today
+
+
 if __name__ == '__main__':
-    LANGUAGE = sys.argv[1]
+    COUNTRY_CODE = sys.argv[1].upper()
     INV_FOLDER = sys.argv[2]
     RES_FOLDER = sys.argv[3]
-    COUNTRY = sys.argv[4]
+    LANGUAGE_COUNTRY = {'AT': ['deu', 'austria'],
+                        'DE': ['deu', 'german'],
+                        'FR': ['fra', 'france'],
+                        'UK': ['eng', 'unitedkingdom'],
+                        'PL': ['pol', 'poland'],
+                        'CZ': ['ces', 'czech'],
+                        'NL': ['nld', 'netherlands'],
+                        'BE': ['nld', 'belgium'],
+                        'SK': ['slk', 'slovakia'],
+                        'CH': ['deu', 'switzerland'],
+                        'LT': ['lit', 'lithuania'],
+                        'LV': ['lat', 'latvia'],
+                        'EE': ['est', 'estonia'],
+                        'SE': ['swe', 'sweden'],
+                        'DK': ['dan', 'denmark'],
+                        'FI': ['fin', 'finland']}
+    try:
+        [LANGUAGE, COUNTRY] = LANGUAGE_COUNTRY[COUNTRY_CODE]
+    except:
+        sys.exit()
     getTemplate(COUNTRY)
     getConfig()
     FILELIST = getFlist(INV_FOLDER)
@@ -149,6 +175,7 @@ if __name__ == '__main__':
     # pytesseract.pytesseract.tesseract_cmd = r'C:\\Users\\I559057\\AppData\\Local\\Programs\\Tesseract-OCR\\tesseract'
     # steve's machine
     final_res = {"invoice": [], "amount": []}
+    RES_FOLDER = make_dir(RES_FOLDER)
     for filename in FILELIST:
         print(filename)
         pic_list = pdf2img(INV_FOLDER + "/" + filename)
