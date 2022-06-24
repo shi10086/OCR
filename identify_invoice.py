@@ -140,7 +140,7 @@ def drawBox(im, result, save_path):
 
 def make_dir(res_folder):
     today = str(datetime.date.today())
-    os.makedirs(res_folder + today, exist_ok=True)
+    os.makedirs(res_folder + "\\" + today, exist_ok=True)
     return res_folder + "\\" + today
 
 
