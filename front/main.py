@@ -5,6 +5,7 @@ import sys
 import os
 from functools import partial
 import pandas as pd
+import datetime
 
 filePath = ''
 app = Flask(__name__)
@@ -54,6 +55,7 @@ def file_filter(types, f):
 
 @app.route('/getFileList')
 def getFileList():
+
     lists = getFlist(filePath)
     excelList = list(filter(partial(file_filter, ['.xls']), lists))
     pgList = list(filter(partial(file_filter, ['.jpg']), lists))
@@ -116,6 +118,8 @@ def file_view(index_path=''):
 
 
 if __name__ == "__main__":
-    filePath = sys.argv[1]
-
+    path = sys.argv[1]
+    today = str(datetime.date.today())
+    filePath = path + "\\" + today
+    print(filePath)
     app.run(debug=True)
