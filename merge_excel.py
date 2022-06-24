@@ -25,7 +25,7 @@ if __name__ == '__main__':
     FILE_LIST = [RES_FOLDER + "\\" + file for file in FILE_LIST]
     merged_data = merge_excel(FILE_LIST)
     writer = pd.ExcelWriter(RES_FOLDER+"\\result.xls")
-    merged_data.to_excel(writer)
+    merged_data.to_excel(writer, index=False)
     writer.save()
     writer.close()
 
