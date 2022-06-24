@@ -1,6 +1,7 @@
 import os
 import sys
 import pandas as pd
+import datetime
 
 
 def merge_excel(files):
@@ -17,6 +18,8 @@ def merge_excel(files):
 
 if __name__ == '__main__':
     RES_FOLDER = sys.argv[1]
+    today = str(datetime.date.today())
+    RES_FOLDER += "\\" + today
     # TARGET_FOLDER = "C:\\Users\\I559057\\Desktop\\OCR_res"
     FILE_LIST = os.listdir(RES_FOLDER)
     FILE_LIST = [RES_FOLDER + "\\" + file for file in FILE_LIST]
