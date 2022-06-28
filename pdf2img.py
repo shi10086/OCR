@@ -34,8 +34,8 @@ def pdf2img(filename):
             pix.save(pic_name)
             pic_list.append(pic_name)
         return pic_list
-    except:
-        print("error")
+    except Exception as e:
+        print(e)
         return []
 
 
