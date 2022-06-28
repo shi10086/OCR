@@ -161,6 +161,8 @@ def is_invoice(s):
     :param s: string
     :return: bool
     """
+    if len(s) > 16:
+        return False
     re_str1 = "^\d{7,}[.]?$"
     pattern1 = re.compile(re_str1)
     if re.match(pattern1, s):
