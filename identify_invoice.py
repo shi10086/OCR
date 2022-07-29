@@ -196,25 +196,24 @@ if __name__ == '__main__':
             for keyword in KEYWORD_LIST:
                 tg = data.get(keyword.upper())
                 if tg is not None:
-                    for pos in tg:
+                    for pos in tg:  # 循环keyword的位置
                         res = find_value(target=pos, pos_lis=data)
                         new_keyword = res["below"][0]
                         tg = res["below"][1]
                         if new_keyword == '':
                             break
-                        # if len(new_keyword) < 7:
-                        #     continue
                         invoice_amount["invoice"].append(res["below"])
-                        tmp_idx = 0
+                        count = 0
                         while new_keyword != "":
+                            if count >= 50:  # 循环超过50次强行退出
+                                break
                             res = find_value(target=tg, pos_lis=data)
                             new_keyword = res["below"][0]
                             tg = res["below"][1]
-                            # if len(new_keyword) < 7:
-                            #     break
                             if new_keyword == '':
                                 break
                             invoice_amount["invoice"].append(res["below"])
+                            count += 1
             # 按照发票数量识别金额
             for keyword in KEYWORD_AMOUNT:
                 tg = data.get(keyword.upper())
@@ -226,14 +225,17 @@ if __name__ == '__main__':
                         if new_keyword == '':
                             break
                         invoice_amount["amount"].append(res["below"])
+                        count = 1
                         while new_keyword != '':
-                            pre_keyword = new_keyword
+                            if count >= 50:
+                                break
                             res = find_amount(target=tg, pos_lis=data)
                             new_keyword = res["below"][0]
                             tg = res["below"][1]
                             if new_keyword == '':
                                 break
                             invoice_amount["amount"].append(res["below"])
+                            count += 1
             # if len(invoice_amount["amount"]) > len(invoice_amount["invoice"]):
             #     invoice_amount["amount"] = invoice_amount["amount"][:-1]
             # print(invoice_amount)

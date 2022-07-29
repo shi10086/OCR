@@ -73,9 +73,9 @@ def find_value(target, pos_lis):
         if not is_invoice(key):
             continue
         for pos in tmp_pos_lis:
-            if pos[0] + pos[2] < target_x or pos[1] + pos[3] < target_y + 2 or (
+            if pos[0] + pos[2] < target_x or pos[1] + pos[3] < target_y + height*0.7 or (
                     pos[0] == target_x and pos[1] == target_y) or (
-                    pos[0] >= target_x + width and pos[1] + pos[3] >= target_y):
+                    pos[0] >= target_x + width and pos[1] + pos[3] >= target_y + height):
                 continue
             # tmp_dis = math.sqrt((pos[0] - target_x) ** 2 + (pos[1] - target_y) ** 2)
             # 计算距离以更新结果
@@ -112,9 +112,9 @@ def find_amount(target, pos_lis):
         if not is_amount(key):
             continue
         for pos in tmp_pos_lis:
-            if pos[0] + pos[2] < target_x or pos[1] + pos[3] < target_y or (
+            if pos[0] + pos[2] < target_x or pos[1] + pos[3] < target_y + height*0.7 or (
                     pos[0] == target_x and pos[1] == target_y) or (
-                    pos[0] >= target_x + width and pos[1] + pos[3] >= target_y):
+                    pos[0] >= target_x + width and pos[1] >= target_y + height):
                 continue
             # tmp_dis = math.sqrt((pos[0] - target_x) ** 2 + (pos[1] - target_y) ** 2)
             # 计算距离以更新结果
@@ -131,6 +131,7 @@ def find_amount(target, pos_lis):
                     min_below_dis = tmp_dis
                     possible_res["below"][0] = key
                     possible_res["below"][1] = pos
+
     return possible_res
 
 
