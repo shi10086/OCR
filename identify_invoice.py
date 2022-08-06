@@ -67,6 +67,10 @@ def getFlist(path):
 
 
 def match_invoice_amount(invoice_amount):
+    """
+    :param invoice_amount: 识别的所有发票号和金额
+    :return: 匹配完成的发票号列与金额列
+    """
     invoice_list = invoice_amount["invoice"]
     amount = invoice_amount["amount"]
     # print(invoice_amount)
@@ -74,13 +78,13 @@ def match_invoice_amount(invoice_amount):
         return {"invoice": [], "amount": []}
     matched_amount = []
     for inv in invoice_list:
-        inv_y = inv[1][1]
+        inv_y = inv[1][1]+inv[1][3]/2  # 计算发票中心点的纵坐标
         min_dis = 9999
         tmp_amo = amount[0]
         for amo in amount:
             if amo in matched_amount:
                 continue
-            amo_y = amo[1][1]
+            amo_y = amo[1][1]+amo[1][3]/2  # 计算金额中心点的纵坐标
             if abs(amo_y - inv_y) < min_dis:
                 min_dis = abs(amo_y - inv_y)
                 tmp_amo = amo
@@ -90,6 +94,11 @@ def match_invoice_amount(invoice_amount):
 
 
 def write_excel(identified_res, save_path):
+    """
+    将识别结果以excel的形式存储
+    :param identified_res: 识别结果
+    :param save_path: 保存路径
+    """
     try:
         book = xlwt.Workbook(style_compression=0)
         sheet = book.add_sheet('invoice & amount', cell_overwrite_ok=True)
@@ -119,6 +128,12 @@ def write_excel(identified_res, save_path):
 
 
 def drawBox(im, result, save_path):
+    """
+    在图片中将识别结果框出按顺序编号并保存
+    :param im: 需要修改的图片
+    :param result: 识别结果
+    :param save_path: 图片保存路径
+    """
     inv = result["invoice"]
     amo = result["amount"]
     for i in range(len(inv)):
@@ -139,6 +154,11 @@ def drawBox(im, result, save_path):
 
 
 def make_dir(res_folder):
+    """
+    创建保存当前日期下识别结果的文件夹
+    :param res_folder: 在该目录下创建文件夹
+    :return: 创建成功的路径
+    """
     today = str(datetime.date.today())
     os.makedirs(res_folder + "\\" + today, exist_ok=True)
     return res_folder + "\\" + today
