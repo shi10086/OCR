@@ -19,7 +19,7 @@ def readTemplate():
     root_folder = (os.path.dirname(cwd))
     cf = configparser.ConfigParser()
     print(root_folder)
-    cf.read('../template.conf')
+    cf.read('../template.conf',encoding='UTF-8')
     sessions = cf.sections()
     words = []
     amount = []
