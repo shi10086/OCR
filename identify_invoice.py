@@ -39,7 +39,7 @@ def getTemplate(country):
     cwd = os.path.join(os.getcwd(), sys.argv[0])
     root_folder = (os.path.dirname(cwd))
     db_config = configparser.ConfigParser()
-    db_config.read(os.path.join(root_folder, 'template.conf'))
+    db_config.read(os.path.join(root_folder, 'template.conf'), encoding='UTF-8')
     key_refrences = db_config.get(country, 'reference').strip().split('\n')
     print(key_refrences)
     global KEYWORD_LIST
